@@ -1,0 +1,9 @@
+{
+  "name": "fk-http-status",
+  "description": "Defining http status code in constants",
+  "autoload": {
+    "psr-4": [
+      "fk\\http\\": "src"
+    ]
+  }
+}
