@@ -5,5 +5,6 @@
     "psr-4": {
       "fk\\http\\": "src"
     }
-  }
+  },
+  "minimum-stability": "dev"
 }
