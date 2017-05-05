@@ -84,17 +84,3 @@ class StatusCode
     const SERVER_GATEWAY_TIMEOUT = 504;
     const SERVER_HTTP_VERSION_NOT_SUPPORTED = 505;
 }
-
-/*
- * left page:
- *      logged in
- *          not received  -> verify
- *                        -> ship routine
- *          received card -> apply for card page
- *
- *      not logged in     -> apply for card page
- *
- *
- *
- *
- */
