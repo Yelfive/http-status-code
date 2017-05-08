@@ -19,7 +19,7 @@ class RestfulParser
      */
     public static function parseFormData($rawBody): array
     {
-        if (strncmp(strtolower($_SERVER['HTTP_CONTENT_TYPE']), 'multipart/form-data', 19)) return [];
+        if (!static::needParse()) return [];
 
         $params = [];
         $rawArray = explode("\n", $rawBody);
@@ -35,5 +35,11 @@ class RestfulParser
             $params[$name] = $value;
         }
         return $params;
+    }
+
+    public static function needParse()
+    {
+        return isset($_SERVER['HTTP_CONTENT_TYPE'])
+        && 0 === strncmp('multipart/form-data', $_SERVER['HTTP_CONTENT_TYPE'], 19);
     }
 }
