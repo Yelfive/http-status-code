@@ -83,4 +83,16 @@ class StatusCode
     const SERVER_SERVICE_UNAVAILABLE = 503;
     const SERVER_GATEWAY_TIMEOUT = 504;
     const SERVER_HTTP_VERSION_NOT_SUPPORTED = 505;
+
+    const ALWAYS_EXPECTS_OK = false;
+
+    /**
+     * Provides a uniform entry for modifying status code
+     * @param int $code
+     * @return int
+     */
+    public static function getStatusCode($code)
+    {
+        return static::ALWAYS_EXPECTS_OK ? static::SUCCESS_OK : $code;
+    }
 }
