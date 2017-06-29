@@ -20,6 +20,7 @@ class StatusCode
     */
     const MESSAGE_CONTINUE = 100;
     const MESSAGE_SWITCH_PROTOCOL = 101;
+    const MESSAGE_PROCESSING = 102;
 
     /*
     |----------------------
@@ -33,6 +34,7 @@ class StatusCode
     const SUCCESS_RESET_CONTENT = 205;
     /* Request range header */
     const SUCCESS_PARTIAL_CONTENT = 206;
+    const SUCCESS_MULTI_STATUS = 207;
 
     /*
     |----------------------
@@ -72,6 +74,17 @@ class StatusCode
     const CLIENT_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
     const CLIENT_EXPECTATION_FAILED = 417;
 
+    const CLIENT_UNPROCESSABLE_ENTITY = 422;
+    const CLIENT_LOCKED = 423;
+    const CLIENT_FAILED_DEPENDENCY = 424;
+    const CLIENT_UNORDERED_COLLECTION = 425;
+    const CLIENT_UPGRADE_REQUIRED = 426;
+    const CLIENT_PRECONDITION_REQUIRED = 428;
+    const CLIENT_TOO_MANY_REQUESTS = 429;
+    const CLIENT_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
+    const CLIENT_RETRY_WITH = 449;
+    const CLIENT_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
+
     /*
     |----------------------
     |     Server Error
@@ -83,6 +96,11 @@ class StatusCode
     const SERVER_SERVICE_UNAVAILABLE = 503;
     const SERVER_GATEWAY_TIMEOUT = 504;
     const SERVER_HTTP_VERSION_NOT_SUPPORTED = 505;
+    const SERVER_VARIANT_ALSO_NEGOTIATES = 506;
+    const SERVER_INSUFFICIENT_STORAGE = 507;
+    const SERVER_BANDWIDTH_LIMIT_EXCEEDED = 509;
+    const SERVER_NOT_EXTENDED = 510;
+    const SERVER_NETWORK_AUTHENTICATION_REQUIRED = 511;
 
     const ALWAYS_EXPECTS_OK = false;
 
