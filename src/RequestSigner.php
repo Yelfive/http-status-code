@@ -7,14 +7,23 @@
 
 namespace fk\http;
 
+use fk\http\exceptions\FieldsExceededException;
+
 class RequestSigner
 {
     protected $key;
     protected $algorithm;
 
+    protected $maxFieldsAllowed = 100;
+
+    /**
+     * @var bool Whether to blur the sign, to mix it up
+     */
+    protected $blur = false;
+
     /**
      * @param string $key
-     * @param callable $algorithm
+     * @param callable $algorithm function with one parameter to accept `$data` to be signed
      * @return static
      */
     public function __construct($key, $algorithm = null)
@@ -32,9 +41,33 @@ class RequestSigner
 
     /**
      * @param array|string $data
-     * @return string Signature
+     * @return string Signature string, empty string when data is empty
+     * @throws FieldsExceededException
      */
     public function sign($data): string
+    {
+        if (!$data) return '';
+
+        if (count($data) > $this->maxFieldsAllowed) {
+            throw new FieldsExceededException("Maximum allowed fields exceeded, over $this->maxFieldsAllowed");
+        }
+
+        if (is_callable($this->algorithm)) {
+            $sign = call_user_func($this->algorithm, $data);
+        } else {
+            $sign = $this->signWithMD5($data);
+        }
+
+        return $this->blur ? $this->toBlur($sign) : $sign;
+    }
+
+    public function blur($blur = true)
+    {
+        $this->blur = $blur;
+        return $this;
+    }
+
+    protected function signWithMD5($data)
     {
         $sorted = $this->sort($data);
         $queryString = $this->buildQuery($sorted);
@@ -43,7 +76,7 @@ class RequestSigner
         return strtoupper($result);
     }
 
-    public function blur($sign)
+    public function toBlur($sign)
     {
         for ($i = 0; $i < 32; $i++) {
             if (rand(0, 10) < 6) {
