@@ -58,13 +58,34 @@ class RequestSigner
             $sign = $this->signWithMD5($data);
         }
 
-        return $this->blur ? $this->toBlur($sign) : $sign;
+        if ($this->blur) {
+            $this->blur = false;
+            return $this->uglify($sign);
+        }
+        return $sign;
     }
 
-    public function blur($blur = true)
+    public function asUglify($blur = true)
     {
+        // uglify
         $this->blur = $blur;
         return $this;
+    }
+
+    public function uglify($sign)
+    {
+        for ($i = 0; $i < 32; $i++) {
+            if (rand(0, 10) < 6) {
+                $sign[$i] = strtolower($sign[$i]);
+            }
+        }
+        $result = $this->randomString(9) . $sign . $this->randomString(rand(1, 10)) . str_repeat('=', rand(1, 2));
+        return $result;
+    }
+
+    public function purify($sign)
+    {
+        return strtoupper(substr($sign, 9, 32));
     }
 
     protected function signWithMD5($data)
@@ -74,17 +95,6 @@ class RequestSigner
         $result = md5(md5($queryString) . $this->key);
 
         return strtoupper($result);
-    }
-
-    public function toBlur($sign)
-    {
-        for ($i = 0; $i < 32; $i++) {
-            if (rand(0, 10) < 6) {
-                $sign[$i] = strtolower($sign[$i]);
-            }
-        }
-        $result = $this->randomString(9) . $sign . $this->randomString(rand(1, 10)) . str_repeat('=', rand(1, 2));
-        return $result;
     }
 
     protected function randomString($count)
@@ -111,8 +121,11 @@ class RequestSigner
      */
     public function validate($data, $sign): bool
     {
-        $sign = strtoupper(substr($sign, 9, 32));
-        return $this->sign($data) === $sign;
+        if (!$sign || !$data) return false;
+
+        if (substr($sign, -1) !== '=') return false;
+
+        return $this->sign($data) === $this->purify($sign);
     }
 
     protected function sort($data)
