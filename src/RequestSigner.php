@@ -9,7 +9,7 @@ namespace fk\http;
 
 use fk\http\exceptions\FieldsExceededException;
 
-class RequestSigner
+class RequestSigner extends RequestSignerUtility
 {
     protected $key;
     protected $algorithm;
@@ -19,7 +19,7 @@ class RequestSigner
     /**
      * @var bool Whether to blur the sign, to mix it up
      */
-    protected $blur = false;
+    protected $ugly = false;
 
     /**
      * @param string $key
@@ -55,20 +55,20 @@ class RequestSigner
         if (is_callable($this->algorithm)) {
             $sign = call_user_func($this->algorithm, $data);
         } else {
-            $sign = $this->signWithMD5($data);
+            $sign = $this->signWithMD5($data, $this->key);
         }
 
-        if ($this->blur) {
-            $this->blur = false;
+        if ($this->ugly) {
+            $this->ugly = false;
             return $this->uglify($sign);
         }
         return $sign;
     }
 
-    public function asUglify($blur = true)
+    public function asUgly($ugly = true)
     {
         // uglify
-        $this->blur = $blur;
+        $this->ugly = $ugly;
         return $this;
     }
 
@@ -83,86 +83,23 @@ class RequestSigner
         return $result;
     }
 
-    public function purify($sign)
+    public function purify($sign, $prefixLength = 9)
     {
-        return strtoupper(substr($sign, 9, 32));
-    }
-
-    protected function signWithMD5($data)
-    {
-        $sorted = $this->sort($data);
-        $queryString = $this->buildQuery($sorted);
-        $result = md5(md5($queryString) . $this->key);
-
-        return strtoupper($result);
-    }
-
-    protected function randomString($count)
-    {
-        $string = '';
-        for ($i = 0; $i < $count; $i++) {
-            $rand = rand(0, 10);
-            if ($rand < 3) {
-                $ascii = rand(0, 9);
-            } else if ($rand < 6) {
-                $ascii = rand(65, 90);
-            } else {
-                $ascii = rand(97, 122);
-            }
-            $string .= $rand < 3 ? $ascii : chr($ascii); // ASCII for capital is from 65-90, z=97-122
-        }
-        return $string;
+        return strtoupper(substr($sign, $prefixLength, 32));
     }
 
     /**
      * @param string|array $data
      * @param string $sign
+     * @param int $prefixLength The prefix of the sign
      * @return bool Whether it's a validate sign
      */
-    public function validate($data, $sign): bool
+    public function validate($data, $sign, $prefixLength = 9): bool
     {
         if (!$sign || !$data) return false;
 
         if (substr($sign, -1) !== '=') return false;
 
-        return $this->sign($data) === $this->purify($sign);
-    }
-
-    protected function sort($data)
-    {
-        krsort($data);
-        $sorted = [];
-        /**
-         * a b c | d e f | g
-         * c b a | f e d | g
-         */
-
-        $step = 3;
-        do {
-            $chunk = [];
-            for ($i = 0; $i < $step; $i++) {
-                if (null === $key = key($data)) {
-                    break;
-                } else {
-                    $chunk[] = [$key, current($data)];
-                    next($data);
-                }
-            }
-            unset ($key);
-
-            for ($i = count($chunk); $i > 0; $i--) {
-                list($key, $value) = $chunk[$i - 1];
-                $sorted[$key] = $value;
-            }
-
-        } while (key($data));
-
-        return $sorted;
-    }
-
-    protected function buildQuery($data)
-    {
-//        return http_build_query($data);
-        return str_replace('+', '%20', http_build_query($data));
+        return $this->sign($data) === $this->purify($sign, $prefixLength);
     }
 }
